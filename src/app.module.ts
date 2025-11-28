@@ -15,7 +15,6 @@ import { UnavailabilitiesModule } from './unavailabilities/unavailabilities.modu
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
@@ -23,41 +22,23 @@ import { UnavailabilitiesModule } from './unavailabilities/unavailabilities.modu
       playground: true,
       introspection: true,
     }),
-
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-        const isProd = configService.get('NODE_ENV') === 'production';
-        const databaseUrl = configService.get<string>('DATABASE_URL');
-
-        const baseConfig: TypeOrmModuleOptions = {
-          type: 'postgres',
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: !isProd,
-          logging: !isProd,
-        };
-
-        if (databaseUrl) {
-          // Production (Render / Heroku)
-          return {
-            ...baseConfig,
-            url: databaseUrl,
-            ssl: { rejectUnauthorized: false },
-          };
-        }
-
-        // Local development
-        return {
-          ...baseConfig,
-          host: String(configService.get('DB_HOST', 'localhost')),
-          port: Number(configService.get('DB_PORT', 5432)),
-          username: String(configService.get('DB_USERNAME', 'postgres')),
-          password: String(configService.get('DB_PASSWORD', 'postgres')),
-          database: String(configService.get('DB_NAME', 'roster_db')),
-          ssl: false,
-        };
-      },
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: Number(configService.get('DB_PORT', 5432)),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false,
+        logging: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
     }),
 
     UsersModule,
