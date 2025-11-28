@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -7,23 +6,15 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://localhost:3000',
-      'https://roster-frontend.vercel.app',
-      process.env.FRONTEND_URL,
+      'http://localhost:3000', // local dev
+      'https://roster-frontend.vercel.app', // Vercel frontend
+      process.env.FRONTEND_URL, // optional extra
     ].filter(Boolean),
-    credentials: true,
+    credentials: true, // allow cookies/auth headers
   });
-
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     whitelist: true,
-  //     transform: true,
-  //     forbidNonWhitelisted: true,
-  //   }),
-  // );
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(` Server is running on: http://localhost:${port}/graphql`);
+  console.log(`Server running on port ${port}`);
 }
 bootstrap();
