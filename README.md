@@ -32,7 +32,7 @@ A comprehensive shift scheduling system built with NestJS, GraphQL, TypeORM, and
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/richardjim/roster-backend.git
 cd roster-backend
 ```
 
@@ -222,7 +222,7 @@ query {
 4. Add environment variables:
    - `DATABASE_URL` (from Render PostgreSQL)
    - `NODE_ENV=production`
-   - `FRONTEND_URL` (your Vercel URL)
+   - `FRONTEND_URL` https://roster-frontend.vercel.app/
 5. Deploy!
 
 ## Database Schema
