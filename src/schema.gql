@@ -1,0 +1,182 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+enum AssignmentStatus {
+  ASSIGNED
+  CANCELLED
+  COMPLETED
+}
+
+input CreateAssignmentInput {
+  assignedBy: String
+  shiftId: String!
+  userId: String!
+}
+
+input CreateShiftInput {
+  date: String!
+  description: String
+  endTime: String!
+  maxAssignments: Int! = 1
+  startTime: String!
+  title: String!
+}
+
+input CreateUnavailabilityInput {
+  reason: String!
+  shiftId: String!
+  userId: String!
+}
+
+input CreateUserInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  role: UserRole! = USER
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input FilterShiftInput {
+  endDate: String
+  isOpen: Boolean
+  startDate: String
+  userId: String
+}
+
+type Mutation {
+  createShift(createShiftInput: CreateShiftInput!): Shift!
+  createShiftAssignment(data: CreateAssignmentInput!): ShiftAssignment!
+  createUnavailability(createUnavailabilityInput: CreateUnavailabilityInput!): Unavailability!
+  createUser(createUserInput: CreateUserInput!): User!
+  hardDeleteUser(id: String!): Boolean!
+  removeShift(id: String!): Boolean!
+  removeShiftAssignment(id: String!): Boolean!
+  removeUnavailability(id: String!): Boolean!
+  removeUser(id: String!): Boolean!
+  repeatShift(repeatShiftInput: RepeatShiftInput!): [Shift!]!
+  updateAssignmentStatus(id: String!, status: AssignmentStatus!): ShiftAssignment!
+  updateShift(id: String!, updateShiftInput: UpdateShiftInput!): Shift!
+  updateUnavailability(id: String!, updateUnavailabilityInput: UpdateUnavailabilityInput!): Unavailability!
+  updateUnavailabilityStatus(id: String!, status: UnavailabilityStatus!): Unavailability!
+  updateUser(id: String!, updateUserInput: UpdateUserInput!): User!
+}
+
+type Query {
+  findUserByEmail(email: String!): User
+  openShifts: [Shift!]!
+  shift(id: String!): Shift!
+  shiftAssignment(id: String!): ShiftAssignment
+  shiftAssignments: [ShiftAssignment!]!
+  shiftAssignmentsByShift(shiftId: String!): [ShiftAssignment!]!
+  shiftAssignmentsByUser(endDate: DateTime, startDate: DateTime, userId: String!): [ShiftAssignment!]!
+  shifts(filter: FilterShiftInput): [Shift!]!
+  shiftsByDateRange(endDate: DateTime!, startDate: DateTime!): [Shift!]!
+  unavailabilities: [Unavailability!]!
+  unavailabilitiesByShift(shiftId: String!): [Unavailability!]!
+  unavailabilitiesByUser(userId: String!): [Unavailability!]!
+  unavailability(id: String!): Unavailability!
+  user(id: String!): User!
+  users: [User!]!
+}
+
+input RepeatShiftInput {
+  dates: [DateTime!]!
+  shiftId: String!
+}
+
+type Shift {
+  assignmentCount: Int!
+  assignments: [ShiftAssignment!]
+  createdAt: DateTime!
+  date: String!
+  description: String
+  endTime: String!
+  id: ID!
+  isOpen: Boolean!
+  isRecurring: Boolean!
+  maxAssignments: Int!
+  startTime: String!
+  title: String!
+  unavailabilities: [Unavailability!]
+  updatedAt: DateTime!
+}
+
+type ShiftAssignment {
+  assignedAt: DateTime!
+  assignedBy: String
+  assignor: User
+  createdAt: DateTime!
+  id: ID!
+  shift: Shift!
+  shiftId: String!
+  status: AssignmentStatus!
+  updatedAt: DateTime!
+  user: User
+  userId: String!
+}
+
+type Unavailability {
+  createdAt: DateTime!
+  id: ID!
+  reason: String!
+  shift: Shift!
+  shiftId: String!
+  status: UnavailabilityStatus!
+  updatedAt: DateTime!
+  user: User!
+  userId: String!
+}
+
+enum UnavailabilityStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+input UpdateShiftInput {
+  date: String
+  description: String
+  endTime: String
+  maxAssignments: Int = 1
+  startTime: String
+  title: String
+}
+
+input UpdateUnavailabilityInput {
+  id: String!
+  reason: String
+  shiftId: String
+  status: UnavailabilityStatus
+  userId: String
+}
+
+input UpdateUserInput {
+  email: String
+  firstName: String
+  isActive: Boolean
+  lastName: String
+  role: UserRole = USER
+}
+
+type User {
+  assignments: [ShiftAssignment!]
+  createdAt: DateTime!
+  email: String!
+  firstName: String!
+  id: ID!
+  isActive: Boolean!
+  lastName: String!
+  role: UserRole!
+  unavailabilities: [Unavailability!]
+  updatedAt: DateTime!
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
