@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 
@@ -15,6 +15,7 @@ import { UnavailabilitiesModule } from './unavailabilities/unavailabilities.modu
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
@@ -22,21 +23,43 @@ import { UnavailabilitiesModule } from './unavailabilities/unavailabilities.modu
       playground: true,
       introspection: true,
     }),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST', 'localhost'),
-        port: configService.get('DB_PORT', 5432),
-        username: configService.get('DB_USERNAME', 'postgres'),
-        password: configService.get('DB_PASSWORD', 'postgres'),
-        database: configService.get('DB_NAME', 'roster_db'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('NODE_ENV') !== 'production',
-        logging: configService.get('NODE_ENV') === 'development',
-      }),
       inject: [ConfigService],
+      useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
+        const isProd = configService.get('NODE_ENV') === 'production';
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+
+        const baseConfig: TypeOrmModuleOptions = {
+          type: 'postgres',
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: !isProd,
+          logging: !isProd,
+        };
+
+        if (databaseUrl) {
+          // Production (Render / Heroku)
+          return {
+            ...baseConfig,
+            url: databaseUrl,
+            ssl: { rejectUnauthorized: false },
+          };
+        }
+
+        // Local development
+        return {
+          ...baseConfig,
+          host: String(configService.get('DB_HOST', 'localhost')),
+          port: Number(configService.get('DB_PORT', 5432)),
+          username: String(configService.get('DB_USERNAME', 'postgres')),
+          password: String(configService.get('DB_PASSWORD', 'postgres')),
+          database: String(configService.get('DB_NAME', 'roster_db')),
+          ssl: false,
+        };
+      },
     }),
+
     UsersModule,
     ShiftsModule,
     ShiftAssignmentsModule,
